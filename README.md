@@ -58,6 +58,10 @@ Download-->[Dataset](https://www.kaggle.com/datasets/subirbiswas19/skin-disease-
 ## [Kaggle](https://www.kaggle.com/code/fall2fire/skin-disease-prediction)
 
 ---
+## Model (.h5)
+## [Download-Model](https://github.com/Pranav-Uniyal/Skin-Disease-Prediction/releases/tag/skin-disease-model)
+
+---
 ## Getting Started
 1. Clone the Repository
 ```
