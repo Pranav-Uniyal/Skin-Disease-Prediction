@@ -6,7 +6,7 @@ from tensorflow.keras.preprocessing import image
 from PIL import Image
 
 # Load the trained model
-model = load_model("Skin_disease_model.h5")  
+model = load_model("Skin_disease_model.h5")  # put the relative path according to your directory
 
 # Class index to label mapping
 class_indices = {
