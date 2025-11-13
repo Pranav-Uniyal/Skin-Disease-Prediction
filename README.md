@@ -1,9 +1,11 @@
-## Skin Disease Prediction using ResNet152V2
+# Skin Disease Prediction using ResNet152V2
 A deep learning project that uses ResNet152V2 (transfer learning) to classify various skin diseases from image data. The project includes both a Streamlit-based interactive web app (main.py) and a Jupyter notebook (skin-disease-prediction.ipynb) for training and testing.
 
 ## 🔍 Objective
 Early diagnosis of skin conditions can greatly improve treatment outcomes. This project provides an AI-powered tool to classify common skin infections from images using a fine-tuned ResNet152V2 model trained with transfer learning.
 
+----
+# [Kaggle Notebook](https://www.kaggle.com/code/fall2fire/skin-disease-prediction)
 ----
 ## Key Features
 ✅ Transfer Learning with ResNet152V2
@@ -54,12 +56,8 @@ Skin-Disease-Prediction/
 Download-->[Dataset](https://www.kaggle.com/datasets/subirbiswas19/skin-disease-dataset/data)
 
 ---
-## My Kaggle Notebook Link
-## [Kaggle](https://www.kaggle.com/code/fall2fire/skin-disease-prediction)
-
----
 ## Model (.h5)
-## [Download-Model](https://github.com/Pranav-Uniyal/Skin-Disease-Prediction/releases/tag/skin-disease-model)
+## [Download-Model](https://github.com/Pranav-Uniyal/Skin-Disease-Prediction/releases/tag/Skin-disease-model)
 
 ---
 ## Getting Started
