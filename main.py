@@ -9,7 +9,7 @@ import io
 # -------------------------------------------------
 HF_API_URL = "https://api-inference.huggingface.co/models/Pranav-Uniyal/Skin_Disease_Classifer"
 HF_HEADERS = {
-    "Authorization": "Bearer YOUR_HF_API_TOKEN_HERE"
+    "Authorization": f"Bearer {st.secrets['HF_TOKEN']}"
 }
 
 LABELS = [
@@ -112,3 +112,4 @@ st.markdown(
     "</p>",
     unsafe_allow_html=True
 )
+
