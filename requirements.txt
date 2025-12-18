@@ -1,5 +1,5 @@
 streamlit
 numpy
 pillow
-huggingface-hub
+huggingface-hub==0.20.3
 tflite-runtime
