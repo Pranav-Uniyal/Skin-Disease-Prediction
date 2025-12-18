@@ -1,4 +1,7 @@
-tensorflow==2.13.0
+streamlit
+tensorflow
 numpy
 pillow
-gradio
+matplotlib
+altair
+huggingface_hub
