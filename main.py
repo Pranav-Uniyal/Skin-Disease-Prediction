@@ -25,14 +25,21 @@ MODEL_PATH = "Skin_disease_model.h5"
 @st.cache_resource
 def load_skin_model():
     if not os.path.exists(MODEL_PATH):
-        with st.spinner("Downloading model (first time only)..."):
+        with st.spinner("⬇️ Downloading model (first time only)..."):
             r = requests.get(MODEL_URL, stream=True)
             r.raise_for_status()
             with open(MODEL_PATH, "wb") as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     if chunk:
                         f.write(chunk)
-    return load_model(MODEL_PATH)
+
+    try:
+        # IMPORTANT FIX: compile=False avoids h5py / optimizer issues
+        return load_model(MODEL_PATH, compile=False)
+    except Exception as e:
+        st.error("❌ Failed to load model.")
+        st.exception(e)
+        st.stop()
 
 model = load_skin_model()
 
@@ -95,4 +102,3 @@ if uploaded_file is not None:
 
     st.subheader("📊 Class Probabilities")
     st.bar_chart(prediction[0])
-
