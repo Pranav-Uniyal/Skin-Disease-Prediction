@@ -1,14 +1,44 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
+import requests
+import os
 from tensorflow.keras.models import load_model
+from tensorflow.keras.applications.resnet_v2 import preprocess_input
 from tensorflow.keras.preprocessing import image
 from PIL import Image
 
-# Load the trained model
-model = load_model("Skin_disease_model.h5")  # put the relative path according to your directory
+# -------------------------------
+# Streamlit Config
+# -------------------------------
+st.set_page_config(
+    page_title="Skin Disease Classification",
+    page_icon="🩺",
+    layout="centered"
+)
 
-# Class index to label mapping
+# -------------------------------
+# Model Download from GitHub Releases
+# -------------------------------
+MODEL_URL = "https://github.com/Pranav-Uniyal/Skin-Disease-Prediction/releases/tag/Skin-disease-model"
+MODEL_PATH = "Skin_disease_model.h5"
+
+@st.cache_resource
+def load_skin_model():
+    if not os.path.exists(MODEL_PATH):
+        with st.spinner("Downloading model (first time only)..."):
+            r = requests.get(MODEL_URL, stream=True)
+            r.raise_for_status()
+            with open(MODEL_PATH, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+    return load_model(MODEL_PATH)
+
+model = load_skin_model()
+
+# -------------------------------
+# Class Labels
+# -------------------------------
 class_indices = {
     'BA- cellulitis': 0,
     'BA-impetigo': 1,
@@ -19,31 +49,49 @@ class_indices = {
     'VI-chickenpox': 6,
     'VI-shingles': 7
 }
+
 index_to_label = {v: k for k, v in class_indices.items()}
 
-# App title
+# -------------------------------
+# UI
+# -------------------------------
 st.title("🩺 Skin Disease Classification")
 st.write("Upload an image of a skin disease to get a predicted diagnosis.")
 
-# File uploader
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader(
+    "📁 Choose an image",
+    type=["jpg", "jpeg", "png"]
+)
 
 if uploaded_file is not None:
-    # Display uploaded image
-    img = Image.open(uploaded_file).convert('RGB')
+    # Load & show image
+    img = Image.open(uploaded_file).convert("RGB")
     st.image(img, caption="Uploaded Image", use_column_width=True)
 
-    # Preprocess the image
+    # -------------------------------
+    # Preprocess Image (ResNet152V2)
+    # -------------------------------
     img = img.resize((224, 224))
     img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = preprocess_input(img_array)
 
-    # Make prediction
-    prediction = model.predict(img_array)
-    predicted_index = np.argmax(prediction)
+    # -------------------------------
+    # Prediction
+    # -------------------------------
+    with st.spinner("🔍 Analyzing image..."):
+        prediction = model.predict(img_array)
+        predicted_index = int(np.argmax(prediction))
+        confidence = float(np.max(prediction))
+
     predicted_label = index_to_label[predicted_index]
 
-    # Display prediction
-    st.subheader("🔍 Prediction")
-    st.write(f"**Predicted Disease:** {predicted_label}")
+    # -------------------------------
+    # Results
+    # -------------------------------
+    st.subheader("🔍 Prediction Result")
+    st.success(f"**Predicted Disease:** {predicted_label}")
+    st.write(f"**Confidence:** {confidence:.2f}")
+
+    st.subheader("📊 Class Probabilities")
     st.bar_chart(prediction[0])
