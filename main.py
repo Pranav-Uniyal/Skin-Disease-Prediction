@@ -1,46 +1,18 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-import urllib.request
-import os
-import tflite_runtime.interpreter as tflite
+import requests
+import io
 
-# -------------------------------
-# Streamlit Config
-# -------------------------------
-st.set_page_config(
-    page_title="Skin Disease Classification",
-    page_icon="🩺",
-    layout="centered"
-)
+# -------------------------------------------------
+# CONFIG
+# -------------------------------------------------
+HF_API_URL = "https://api-inference.huggingface.co/models/Pranav-Uniyal/Skin_Disease_Classifer"
+HF_HEADERS = {
+    "Authorization": "Bearer YOUR_HF_API_TOKEN_HERE"
+}
 
-# -------------------------------
-# Model Download (NO EXTRA LIBS)
-# -------------------------------
-MODEL_URL = (
-    "https://huggingface.co/Pranav-Uniyal/"
-    "Skin_Disease_Classifer/resolve/main/skin_disease_model.tflite"
-)
-MODEL_PATH = "skin_disease_model.tflite"
-
-@st.cache_resource
-def load_tflite_model():
-    if not os.path.exists(MODEL_PATH):
-        with st.spinner("⬇️ Downloading model (one-time)..."):
-            urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
-
-    interpreter = tflite.Interpreter(model_path=MODEL_PATH)
-    interpreter.allocate_tensors()
-    return interpreter
-
-interpreter = load_tflite_model()
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-
-# -------------------------------
-# Class Labels
-# -------------------------------
-labels = [
+LABELS = [
     'BA- cellulitis',
     'BA-impetigo',
     'FU-athlete-foot',
@@ -51,38 +23,92 @@ labels = [
     'VI-shingles'
 ]
 
-# -------------------------------
-# UI
-# -------------------------------
-st.title("🩺 Skin Disease Classification")
-st.write("Upload an image of a skin disease to get a predicted diagnosis.")
+# -------------------------------------------------
+# STREAMLIT CONFIG
+# -------------------------------------------------
+st.set_page_config(
+    page_title="Skin Disease Detection",
+    page_icon="🩺",
+    layout="centered"
+)
 
+# -------------------------------------------------
+# UI HEADER
+# -------------------------------------------------
+st.markdown(
+    """
+    <h1 style="text-align:center;">🩺 AI Skin Disease Detection</h1>
+    <p style="text-align:center; color:gray;">
+    Upload a skin image and get an AI-powered diagnosis
+    </p>
+    """,
+    unsafe_allow_html=True
+)
+
+st.divider()
+
+# -------------------------------------------------
+# IMAGE UPLOAD
+# -------------------------------------------------
 uploaded_file = st.file_uploader(
-    "📁 Choose an image",
+    "📤 Upload a skin image",
     type=["jpg", "jpeg", "png"]
 )
 
+# -------------------------------------------------
+# PREDICTION FUNCTION
+# -------------------------------------------------
+def query_model(image_bytes):
+    response = requests.post(
+        HF_API_URL,
+        headers=HF_HEADERS,
+        data=image_bytes
+    )
+    response.raise_for_status()
+    return response.json()
+
+# -------------------------------------------------
+# MAIN LOGIC
+# -------------------------------------------------
 if uploaded_file:
-    img = Image.open(uploaded_file).convert("RGB")
-    st.image(img, caption="Uploaded Image", use_column_width=True)
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-    # Preprocess (ResNet-style)
-    img = img.resize((224, 224))
-    arr = np.array(img, dtype=np.float32)
-    arr = np.expand_dims(arr, axis=0)
-    arr = (arr - 127.5) / 127.5
+    with st.spinner("🔍 Analyzing image using AI..."):
+        img_bytes = uploaded_file.getvalue()
+        result = query_model(img_bytes)
 
-    # Inference
-    interpreter.set_tensor(input_details[0]['index'], arr)
-    interpreter.invoke()
-    preds = interpreter.get_tensor(output_details[0]['index'])[0]
+    # -------------------------------------------------
+    # DISPLAY RESULTS
+    # -------------------------------------------------
+    if isinstance(result, list):
+        st.subheader("🧠 Prediction Result")
 
-    idx = int(np.argmax(preds))
-    confidence = float(np.max(preds))
+        probs = np.zeros(len(LABELS))
+        for item in result:
+            label = item["label"]
+            score = item["score"]
+            if label in LABELS:
+                probs[LABELS.index(label)] = score
 
-    st.subheader("🔍 Prediction Result")
-    st.success(f"**Predicted Disease:** {labels[idx]}")
-    st.write(f"**Confidence:** {confidence:.2f}")
+        top_idx = int(np.argmax(probs))
 
-    st.subheader("📊 Class Probabilities")
-    st.bar_chart(preds)
+        st.success(f"**Predicted Disease:** {LABELS[top_idx]}")
+        st.write(f"**Confidence:** {probs[top_idx]:.2f}")
+
+        st.subheader("📊 Class Probabilities")
+        st.bar_chart(probs)
+
+    else:
+        st.error("❌ Model inference failed. Try again later.")
+
+# -------------------------------------------------
+# FOOTER
+# -------------------------------------------------
+st.divider()
+st.markdown(
+    "<p style='text-align:center; font-size:12px; color:gray;'>"
+    "⚠️ This tool is for educational purposes only. Not a medical diagnosis."
+    "</p>",
+    unsafe_allow_html=True
+)
