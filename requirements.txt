@@ -2,5 +2,5 @@ streamlit
 numpy
 pillow
 requests
-tensorflow==2.13.0
-h5py==3.9.0
+tensorflow==2.15.0
+h5py==3.10.0
