@@ -19,7 +19,7 @@ st.set_page_config(
 # -------------------------------
 # Model Download from GitHub Releases
 # -------------------------------
-MODEL_URL = "https://github.com/Pranav-Uniyal/Skin-Disease-Prediction/releases/download/Skin-disease-model/Skin_disease_model.h5"
+MODEL_URL = "https://huggingface.co/Pranav-Uniyal/Skin_Disease_Classifer/blob/main/Skin_disease_model.h5"
 MODEL_PATH = "Skin_disease_model.h5"
 
 @st.cache_resource
@@ -101,3 +101,4 @@ if uploaded_file is not None:
 
     st.subheader("📊 Class Probabilities")
     st.bar_chart(prediction[0])
+
