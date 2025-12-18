@@ -23,7 +23,6 @@ MODEL_URL = "https://github.com/Pranav-Uniyal/Skin-Disease-Prediction/releases/d
 MODEL_PATH = "Skin_disease_model.h5"
 
 @st.cache_resource
-@st.cache_resource
 def load_skin_model():
     if not os.path.exists(MODEL_PATH):
         with st.spinner("⬇️ Downloading model (first time only)..."):
@@ -35,7 +34,7 @@ def load_skin_model():
                         f.write(chunk)
 
     try:
-        return load_model(MODEL_PATH, compile=False, safe_mode=False)
+        return load_model(MODEL_PATH, compile=False)
     except Exception as e:
         st.error("❌ Model loading failed.")
         st.exception(e)
@@ -102,4 +101,3 @@ if uploaded_file is not None:
 
     st.subheader("📊 Class Probabilities")
     st.bar_chart(prediction[0])
-
