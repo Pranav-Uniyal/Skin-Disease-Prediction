@@ -1,11 +1,10 @@
 import streamlit as st
 import numpy as np
-import requests
-import os
+from PIL import Image
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.resnet_v2 import preprocess_input
 from tensorflow.keras.preprocessing import image
-from PIL import Image
+from huggingface_hub import hf_hub_download
 
 # -------------------------------
 # Streamlit Config
@@ -17,26 +16,19 @@ st.set_page_config(
 )
 
 # -------------------------------
-# Model Download from GitHub Releases
+# Load Model from Hugging Face Hub
 # -------------------------------
-MODEL_URL = "https://huggingface.co/Pranav-Uniyal/Skin_Disease_Classifer/blob/main/Skin_disease_model.h5"
-MODEL_PATH = "Skin_disease_model.h5"
-
 @st.cache_resource
 def load_skin_model():
-    if not os.path.exists(MODEL_PATH):
-        with st.spinner("⬇️ Downloading model (first time only)..."):
-            r = requests.get(MODEL_URL, stream=True)
-            r.raise_for_status()
-            with open(MODEL_PATH, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
-
     try:
-        return load_model(MODEL_PATH, compile=False)
+        model_path = hf_hub_download(
+            repo_id="Pranav-Uniyal/Skin_Disease_Classifer",
+            filename="Skin_disease_model.h5",
+            repo_type="model"
+        )
+        return load_model(model_path, compile=False)
     except Exception as e:
-        st.error("❌ Model loading failed.")
+        st.error("❌ Failed to load model from Hugging Face.")
         st.exception(e)
         st.stop()
 
@@ -101,4 +93,3 @@ if uploaded_file is not None:
 
     st.subheader("📊 Class Probabilities")
     st.bar_chart(prediction[0])
-
