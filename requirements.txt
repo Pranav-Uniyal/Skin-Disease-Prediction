@@ -1,8 +1,5 @@
-tensorflow>=2.11.0
-streamlit>=1.25.0
-numpy>=1.23.0
-pandas>=1.5.0
-Pillow>=9.3.0
-matplotlib>=3.6.0
-scikit-learn>=1.1.0
-opencv-python>=4.7.0
+streamlit
+numpy
+tensorflow
+pillow
+requests
