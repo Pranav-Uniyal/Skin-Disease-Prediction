@@ -20,7 +20,7 @@ def load_trained_model():
             with open(MODEL_PATH, "wb") as f:
                 f.write(r.content)
 
-    return load_model(MODEL_PATH)
+    return tf.compat.v1.keras.models.load_model(MODEL_PATH)
 
 
 
@@ -71,5 +71,6 @@ if uploaded_file:
     )
 
 st.caption("⚠️ This tool is for educational purposes only and not a medical diagnosis.")
+
 
 
