@@ -19,7 +19,9 @@ def load_trained_model():
             r = requests.get(MODEL_URL)
             with open(MODEL_PATH, "wb") as f:
                 f.write(r.content)
-    return load_model(MODEL_PATH)
+
+    return load_model(MODEL_PATH, compile=False)
+
 
 model = load_trained_model()
 
@@ -68,3 +70,4 @@ if uploaded_file:
     )
 
 st.caption("⚠️ This tool is for educational purposes only and not a medical diagnosis.")
+
