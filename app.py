@@ -8,8 +8,8 @@ import tensorflow as tf
 # --------------------------------------------------
 # Download model from GitHub Releases (once)
 # --------------------------------------------------
-MODEL_URL = "https://github.com/Pranav-Uniyal/Skin-Disease-Prediction/releases/download/Skin-disease-model/Skin_disease_model.h5"
-MODEL_PATH = "Skin_disease_model.h5"
+MODEL_URL = "https://github.com/Pranav-Uniyal/Skin-Disease-Prediction/releases/download/keras-model/skin_disease_fixed.keras"
+MODEL_PATH = "skin_disease_fixed.keras"
 
 @st.cache_resource
 def load_trained_model():
@@ -70,6 +70,7 @@ if uploaded_file:
     )
 
 st.caption("⚠️ This tool is for educational purposes only and not a medical diagnosis.")
+
 
 
 
