@@ -1,10 +1,9 @@
 import streamlit as st
 import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
 from PIL import Image
 import requests
 import os
+import tensorflow as tf
 
 # --------------------------------------------------
 # Download model from GitHub Releases (once)
@@ -71,6 +70,7 @@ if uploaded_file:
     )
 
 st.caption("⚠️ This tool is for educational purposes only and not a medical diagnosis.")
+
 
 
 
