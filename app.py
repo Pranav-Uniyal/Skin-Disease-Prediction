@@ -1,23 +1,30 @@
-import gradio as gr
+import streamlit as st
 import numpy as np
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
 from PIL import Image
-import tensorflow as tf
-from huggingface_hub import hf_hub_download
+import requests
+import os
 
 # --------------------------------------------------
-# Load model (download once, cache automatically)
+# Download model from GitHub Releases (once)
 # --------------------------------------------------
-def load_model():
-    model_path = hf_hub_download(
-        repo_id="Pranav-Uniyal/skin-disease-model",   # 👈 CHANGE IF NEEDED
-        filename="Skin_disease_model.h5"
-    )
-    return tf.keras.models.load_model(model_path, compile=False)
+MODEL_URL = "https://github.com/Pranav-Uniyal/Skin-Disease-Prediction/releases/download/Skin-disease-model/Skin_disease_model.h5"
+MODEL_PATH = "Skin_disease_model.h5"
 
-model = load_model()
+@st.cache_resource
+def load_trained_model():
+    if not os.path.exists(MODEL_PATH):
+        with st.spinner("📥 Downloading model..."):
+            r = requests.get(MODEL_URL)
+            with open(MODEL_PATH, "wb") as f:
+                f.write(r.content)
+    return load_model(MODEL_PATH)
+
+model = load_trained_model()
 
 # --------------------------------------------------
-# Class labels (must match training order)
+# Class labels (MUST match training order)
 # --------------------------------------------------
 LABELS = [
     'BA- cellulitis',
@@ -31,38 +38,33 @@ LABELS = [
 ]
 
 # --------------------------------------------------
-# Prediction function
+# Streamlit UI
 # --------------------------------------------------
-def predict(image: Image.Image):
-    image = image.resize((224, 224))
+st.title("🩺 Skin Disease Classification")
+st.write("Upload a skin image to predict the disease (educational use only).")
 
-    img_array = np.array(image, dtype=np.float32)
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
+if uploaded_file:
+    img = Image.open(uploaded_file).convert("RGB")
+    st.image(img, caption="Uploaded Image", use_container_width=True)
+
+    # Preprocessing
+    img = img.resize((224, 224))
+    img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
+    img_array = (img_array / 127.5) - 1.0  # ResNet-style preprocessing
 
-    # ResNet-style preprocessing
-    img_array = (img_array / 127.5) - 1.0
-
+    # Prediction
     preds = model.predict(img_array)[0]
+    predicted_idx = np.argmax(preds)
 
-    return {
-        LABELS[i]: float(preds[i])
-        for i in range(len(LABELS))
-    }
+    st.subheader("🔍 Prediction")
+    st.success(f"**{LABELS[predicted_idx]}**")
 
-# --------------------------------------------------
-# Gradio Interface
-# --------------------------------------------------
-demo = gr.Interface(
-    fn=predict,
-    inputs=gr.Image(type="pil", label="Upload Skin Image"),
-    outputs=gr.Label(num_top_classes=3, label="Prediction"),
-    title="🩺 Skin Disease Classification (CNN)",
-    description=(
-        "Upload a skin image and the AI model will predict the most "
-        "likely skin disease.\n\n"
-        "⚠️ For educational purposes only. Not a medical diagnosis."
-    ),
-    allow_flagging="never"
-)
+    st.subheader("📊 Confidence Scores")
+    st.bar_chart(
+        {LABELS[i]: float(preds[i]) for i in range(len(LABELS))}
+    )
 
-demo.launch()
+st.caption("⚠️ This tool is for educational purposes only and not a medical diagnosis.")
